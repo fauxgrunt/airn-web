@@ -1,0 +1,48 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// CORE APPLICATION MODELS
+// ===========================================
+
+// 1. User Model (for Authentication)
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String   // Hashed password
+  name      String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  products Product[]
+}
+
+// 2. Product Model (e.g., Fertilizer products)
+model Product {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String?
+  price       Float
+  stock       Int
+  batchNumber String?   @unique
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relationship to the User who created/manages it
+  createdBy   User      @relation(fields: [createdById], references: [id])
+  createdById Int
+}
+
+// 3. Enumeration for User Roles (Required for Auth)
+enum Role {
+  USER
+  ADMIN
+}
