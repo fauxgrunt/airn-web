@@ -1,19 +1,20 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module.js'; // Added .js extension
-import { PrismaService } from './prisma/prisma.service.js'; // Added .js extension
-import { PrismaClient } from '@prisma/client'; 
-
-// Define a type for the client that includes the $on method
-type PrismaClientWithOn = PrismaClient & { $on: (event: 'beforeExit', callback: () => Promise<void>) => void };
+import { AppModule } from './app.module.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  // Get the PrismaService instance from the application context
-  const prismaService = app.get(PrismaService);
-  
-  // Cast and register the low-level Prisma hook
-  (prismaService as PrismaClientWithOn).$on('beforeExit', async () => {
+  // M4: Task 4.0 - Enable CORS
+  // This allows your frontend (e.g., running on port 5173 or 3001) 
+  // to make API calls to your backend (port 3000).
+  app.enableCors({
+    origin: '*', // For development, allow all origins
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
+
+  // Use a standard Node signal handler (SIGTERM) to ensure clean shutdown.
+  process.on('SIGTERM', async () => {
     await app.close();
   });
   
